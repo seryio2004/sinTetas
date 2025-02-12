@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Synth</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .keys { display: flex; justify-content: center; margin-top: 20px; }
+        button { margin: 5px; padding: 15px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h1>Sintetizador Web</h1>
+    <label>Frecuencia: <span id="freq-label">440</span> Hz</label>
+    <input type="range" id="freq-slider" min="100" max="1000" value="440">
+    
+    <div class="keys">
+        <button onclick="playNote(261.63)">C</button>
+        <button onclick="playNote(293.66)">D</button>
+        <button onclick="playNote(329.63)">E</button>
+        <button onclick="playNote(349.23)">F</button>
+        <button onclick="playNote(392.00)">G</button>
+        <button onclick="playNote(440.00)">A</button>
+        <button onclick="playNote(493.88)">B</button>
+    </div>
+
+    <script>
+        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let oscillator, gainNode;
+        
+        function playNote(frequency) {
+            stopNote();
+            oscillator = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+            
+            oscillator.type = 'sawtooth'; // Tipo de onda
+            oscillator.frequency.value = frequency;
+            gainNode.gain.value = 0.3;
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+        }
+
+        function stopNote() {
+            if (oscillator) {
+                oscillator.stop();
+                oscillator.disconnect();
+            }
+        }
+
+        document.querySelector("#freq-slider").addEventListener("input", (e) => {
+            let freq = e.target.value;
+            document.querySelector("#freq-label").textContent = freq;
+            if (oscillator) {
+                oscillator.frequency.value = freq;
+            }
+        });
+
+        document.body.addEventListener("mouseup", stopNote);
+    </script>
+</body>
+</html>
