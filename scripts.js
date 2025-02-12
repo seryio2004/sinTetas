@@ -1,6 +1,7 @@
 
 let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let oscillator, gainNode, freq;
+let oscillator, gainNode;
+let freq = 440;
 
 
 document.querySelector("#freq-slider").addEventListener("input", (e) => {
