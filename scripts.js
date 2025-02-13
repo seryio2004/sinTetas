@@ -1,38 +1,41 @@
-
 let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let oscillator, gainNode;
 let freq = 440;
-
+let volume = 0.3; // 🔹 Inicializar el volumen
 
 document.querySelector("#freq-slider").addEventListener("input", (e) => {
     freq = e.target.value;
     document.querySelector("#freq-label").textContent = freq;
-
 });
 
 document.querySelector("#volume-slider").addEventListener("input", (e) => {
     volume = parseFloat(e.target.value);
     document.querySelector("#volume-label").textContent = volume.toFixed(2);
     
-    // Si el oscilador está sonando, actualizar en tiempo real
+    // 🔹 Si el gainNode existe, actualiza el volumen en tiempo real
     if (gainNode) {
         gainNode.gain.value = volume;
     }
 });
+
 function playNote(frequency) {
     stopNote();
     oscillator = audioCtx.createOscillator();
-    gainNode = audioCtx.createGain();
     
-    oscillator.type = 'sawtooth'; // Tipo de onda
+    // 🔹 Si ya existe gainNode, reutilizarlo
+    if (!gainNode) {
+        gainNode = audioCtx.createGain();
+        gainNode.connect(audioCtx.destination);
+    }
+
+    oscillator.type = 'sawtooth';
     oscillator.frequency.value = frequency;
-    gainNode.gain.value = 0.3;
+    gainNode.gain.value = volume; // 🔹 Aplicar el volumen actual
 
     oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-
     oscillator.start();
 }
+
 function calcularHercios(nota){
     switch(nota){
         case "do":
@@ -60,7 +63,5 @@ function stopNote() {
         oscillator.disconnect();
     }
 }
-
-
 
 document.body.addEventListener("mouseup", stopNote);
