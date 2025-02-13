@@ -10,7 +10,15 @@ document.querySelector("#freq-slider").addEventListener("input", (e) => {
 
 });
 
-
+document.querySelector("#volume-slider").addEventListener("input", (e) => {
+    volume = parseFloat(e.target.value);
+    document.querySelector("#volume-label").textContent = volume.toFixed(2);
+    
+    // Si el oscilador está sonando, actualizar en tiempo real
+    if (gainNode) {
+        gainNode.gain.value = volume;
+    }
+});
 function playNote(frequency) {
     stopNote();
     oscillator = audioCtx.createOscillator();

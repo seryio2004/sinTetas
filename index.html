@@ -15,6 +15,13 @@
     <label>Frecuencia: <span id="freq-label">440</span> Hz</label>
     <input type="range" id="freq-slider" min="100" max="1000" value="440">
 
+
+    <br>
+
+    <label for="volume-slider">Volumen:</label>
+    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.3">
+    <span id="volume-label">0.3</span>
+    
     <div class="keys">
         <button onclick="playNote(calcularHercios('do'))">C</button>
         <button onclick="playNote(calcularHercios('re'))">D</button>
