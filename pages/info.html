@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explicación del Sintetizador</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Explicación del syn</h1>
+        <nav>
+            <a href="../index.html">Inicio</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Introducción -->
+        <section id="introduccion">
+            <h2>Introducción</h2>
+            <p>
+                Este sintetizador web te permite generar sonidos ajustando la frecuencia y el volumen.
+                Está basado en la <strong>Web Audio API</strong>, que permite crear y manipular sonido en el navegador.
+            </p>
+        </section>
+
+        <!-- Lógica del sonido -->
+        <section id="logica-sonido">
+            <h2>Lógica del sonido</h2>
+            <p>
+                El sonido se genera mediante ondas de frecuencia. En música, cada nota corresponde a una frecuencia en Hertz (Hz).
+                La relación entre notas sigue la <strong>escala temperada</strong>, donde cada nota está separada por un <em>intervalo logarítmico</em>.
+            </p>
+            <h3>Cálculo de las notas musicales</h3>
+            <p>
+                La frecuencia de cada nota se calcula con la fórmula:
+            </p>
+            <blockquote>
+                <strong>f = f<sub>0</sub> × (2^(n/12))</strong>
+            </blockquote>
+            <p>
+                Donde:
+                <ul>
+                    <li><strong>f</strong> es la frecuencia de la nota.</li>
+                    <li><strong>f<sub>0</sub></strong> es la frecuencia base (ejemplo: 440 Hz para el La).</li>
+                    <li><strong>n</strong> es el número de semitonos respecto a la nota base.</li>
+                </ul>
+            </p>
+            <p>
+                Por ejemplo, el <strong>Do</strong> (C) si tomamos La = 440 Hz, sería:
+            </p>
+            <pre>Do = 440 × (2^(-9/12)) ≈ 261.63 Hz</pre>
+        </section>
+
+        <!-- Funcionamiento del sintetizador -->
+        <section id="funcionamiento">
+            <h2>Funcionamiento del sintetizador web</h2>
+            <p>
+                Nuestro sintetizador usa la <strong>Web Audio API</strong> para generar sonido.
+                Se crea un <code>OscillatorNode</code> que produce una onda sonora con una determinada frecuencia.
+            </p>
+            <h3>Componentes principales:</h3>
+            <ul>
+                <li>📡 <strong>OscillatorNode:</strong> Genera la onda de sonido.</li>
+                <li>🔊 <strong>GainNode:</strong> Controla el volumen del sonido.</li>
+                <li>🎛️ <strong>Interfaz:</strong> Controles para cambiar la frecuencia y volumen en tiempo real.</li>
+            </ul>
+            <p>
+                Puedes modificar el sonido con un **slider de frecuencia** y un **slider de volumen**, lo que cambia los valores en tiempo real.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Proyecto Sintetizador Web - 2025</p>
+    </footer>
+</body>
+</html>
