@@ -1,67 +1,167 @@
 let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let oscillator, gainNode;
+let gainNode;
 let freq = 440;
-let volume = 0.3; // 🔹 Inicializar el volumen
+let volume = 0.3;
+let waveform = 'sine'; // Forma de onda por defecto
+let keyToNote = {};
+let activeOscillators = {}; //Para manejar múltiples sonidos
+let currentButtonNote = null;
+let buttonTimeout = null;
 
+// Función para calcular notas en base a la frecuencia seleccionada
+function actualizarNotas() {
+    keyToNote = {
+        "k": freq * (2 ** (9 / 12)), // La 
+        "o": freq * (2 ** (10 / 12)),  // si#
+        "l": freq * (2 ** (11 / 12)),  // si 
+        "d": freq , // La (frecuencia base) Do
+        "r": freq * (2 ** (1/ 12)),  // do#
+        "f": freq * (2 ** (2 / 12)), // Re
+        "t": freq * (2 ** (3 / 12)),  // re#
+        "g": freq * (2 ** (4 / 12)), // Mi
+        "h": freq * (2 ** (5 / 12)), // Fa
+        "u": freq * (2 ** (6 / 12)),  // fa#
+        "j": freq * (2 ** (7 / 12)), // Solº
+        "i": freq * (2 ** (8 / 12)),  // sol#
+    };
+}
+
+// Inicializar notas al cargar la página
+actualizarNotas();
+
+// 🎛 Slider de frecuencia
 document.querySelector("#freq-slider").addEventListener("input", (e) => {
-    freq = e.target.value;
+    freq = parseFloat(e.target.value);
     document.querySelector("#freq-label").textContent = freq;
+    actualizarNotas();
 });
 
+// 🎚 Slider de volumen
 document.querySelector("#volume-slider").addEventListener("input", (e) => {
     volume = parseFloat(e.target.value);
     document.querySelector("#volume-label").textContent = volume.toFixed(2);
-    
-    // 🔹 Si el gainNode existe, actualiza el volumen en tiempo real
-    if (gainNode) {
-        gainNode.gain.value = volume;
+    for (let key in activeOscillators) {
+        activeOscillators[key].gainNode.gain.value = volume;
     }
 });
 
-function playNote(frequency) {
-    stopNote();
-    oscillator = audioCtx.createOscillator();
-    
-    // 🔹 Si ya existe gainNode, reutilizarlo
-    if (!gainNode) {
-        gainNode = audioCtx.createGain();
-        gainNode.connect(audioCtx.destination);
-    }
+// 🎚 Selector de forma de onda
+document.querySelector("#waveform-selector").addEventListener("change", (e) => {
+    waveform = e.target.value;
+});
 
-    oscillator.type = 'sawtooth';
+// Detectar teclas presionadas
+document.addEventListener("keydown", (event) => {
+    let key = event.key.toLowerCase();
+    if (keyToNote[key] && !activeOscillators[key]) { // Si no está ya sonando
+        playNote(key, keyToNote[key]);
+        highlightKey(key, true);
+    }
+});
+
+//Detectar teclas soltadas
+document.addEventListener("keyup", (event) => {
+    let key = event.key.toLowerCase();
+    if (activeOscillators[key]) {
+        stopNote(key);
+        highlightKey(key, false);
+    }
+});
+
+function playNoteFromButton(note) {
+    const noteFrequencies = {
+        "do": keyToNote["c"],
+        "re": keyToNote["d"],
+        "mi": keyToNote["e"],
+        "fa": keyToNote["f"],
+        "sol": keyToNote["g"],
+        "la": keyToNote["a"],
+        "si": keyToNote["b"] * (2 ** (2 / 12)) // Si
+    };
+
+    if (noteFrequencies[note]) {
+        if (currentButtonNote) {
+            stopNoteFromButton(currentButtonNote);
+        }
+        playNoteFromButtonHelper(note, noteFrequencies[note]);
+        currentButtonNote = note;
+
+        if (buttonTimeout) {
+            clearTimeout(buttonTimeout);
+        }
+        buttonTimeout = setTimeout(() => {
+            stopNoteFromButton(note);
+            currentButtonNote = null;
+        }, 2000);
+    }
+}
+
+function playNoteFromButtonHelper(note, frequency) {
+    let oscillator = audioCtx.createOscillator();
+    let gainNode = audioCtx.createGain();
+
+    oscillator.type = waveform; // Usar la forma de onda seleccionada
     oscillator.frequency.value = frequency;
-    gainNode.gain.value = volume; // 🔹 Aplicar el volumen actual
+    gainNode.gain.value = volume;
 
     oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
     oscillator.start();
+
+    activeOscillators[note] = { oscillator, gainNode };
 }
 
-function calcularHercios(nota){
-    switch(nota){
-        case "do":
-            return freq;
-        case "re":
-            return freq * (2 **(2/12));
-        case "mi":
-            return freq * (2 **(4/12));
-        case "fa":
-            return freq * (2 **(5/12));
-        case "sol":
-            return freq * (2 **(7/12));
-        case "la":
-            return freq * (2 **(9/12));
-        case "si":
-            return freq * (2 **(11/12));
-        case "do2":
-            return freq * (2 **(12/12));
+function stopNoteFromButton(note) {
+    if (activeOscillators[note]) {
+        let { oscillator, gainNode } = activeOscillators[note];
+
+        gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+        setTimeout(() => {
+            oscillator.stop();
+            oscillator.disconnect();
+            delete activeOscillators[note];
+        }, 100);
     }
 }
 
-function stopNote() {
-    if (oscillator) {
-        oscillator.stop();
-        oscillator.disconnect();
+function playNote(key, frequency) {
+    let oscillator = audioCtx.createOscillator();
+    let gainNode = audioCtx.createGain();
+
+    oscillator.type = waveform; // Usar la forma de onda seleccionada
+    oscillator.frequency.value = frequency;
+    gainNode.gain.value = volume;
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();
+
+    activeOscillators[key] = { oscillator, gainNode };
+}
+
+// Detener sonido de una tecla
+function stopNote(key) {
+    if (activeOscillators[key]) {
+        let { oscillator, gainNode } = activeOscillators[key];
+
+        //  Suavizar el apagado para evitar cortes bruscos
+        gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+        setTimeout(() => {
+            oscillator.stop();
+            oscillator.disconnect();
+            delete activeOscillators[key];
+        }, 100);
     }
 }
 
-document.body.addEventListener("mouseup", stopNote);
+//Resaltar teclas en pantalla
+function highlightKey(key, active) {
+    let keyElement = document.querySelector(`[data-key="${key}"]`);
+    if (keyElement) {
+        keyElement.classList.toggle("active", active);
+    }
+}

@@ -5,6 +5,7 @@ body {
     padding: 0;
     background-color: #f4f4f4;
     color: #333;
+    text-align: center;
 }
 
 header {
@@ -23,5 +24,78 @@ nav a {
 main {
     max-width: 800px;
     margin: 20px auto;
-    padding: 
+    padding: 20px;
 }
+
+#teclado-virtual {
+    text-align: center;
+    margin-top: 20px;
+}
+
+
+.keyboard {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.key.sharp {
+    background: #333;
+    color: #fff;
+    height: 50px;
+    margin: 0 5px;
+}
+
+.key {
+    width: 50px;
+    height: 70px;
+    border: 2px solid #333;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.1s;
+}
+
+.key small {
+    font-size: 12px;
+    color: #666;
+}
+
+.key.active {
+    background: #ffcc00;
+    transform: scale(1.1);
+}
+
+.keys button {
+    width: 50px;
+    height: 50px;
+    margin: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.1s;
+}
+
+.keys button:hover {
+    background: #ddd;
+}
+
+label {
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+input[type="range"] {
+    width: 300px;
+    margin: 10px 0;
+}
+
+#freq-label, #volume-label {
+    font-weight: bold;
+}asd

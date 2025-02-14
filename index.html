@@ -1,27 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Synth</title>
-    <link rel="stylesheet" href="styles.css">
-
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        .keys { display: flex; justify-content: center; margin-top: 20px; }
-        button { margin: 5px; padding: 15px; font-size: 18px; }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
-    <a href="/pages/info.html">
+    <div>
+    <a href="pages/info.html">
         <button>Ir a la Página</button>
     </a>
-
-
+</div>
     <h1>Sintetizador Web</h1>
     <label>Frecuencia: <span id="freq-label">440</span> Hz</label>
     <input type="range" id="freq-slider" min="100" max="1000" value="440">
-
 
     <br>
 
@@ -29,17 +24,52 @@
     <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.3">
     <span id="volume-label">0.3</span>
 
+    <label for="waveform-selector">Forma de onda:</label>
+    <select id="waveform-selector">
+        <option value="sine">Sine</option>
+        <option value="square">Square</option>
+        <option value="sawtooth">Sawtooth</option>
+        <option value="triangle">Triangle</option>
+    </select>
+
     <div class="keys">
-        <button onclick="playNote(calcularHercios('do'))">C</button>
-        <button onclick="playNote(calcularHercios('re'))">D</button>
-        <button onclick="playNote(calcularHercios('mi'))">E</button>
-        <button onclick="playNote(calcularHercios('fa'))">F</button>
-        <button onclick="playNote(calcularHercios('sol'))">G</button>
-        <button onclick="playNote(calcularHercios('la'))">A</button>
-        <button onclick="playNote(calcularHercios('si'))">B</button>
+        <button onclick="playNoteFromButton('do')">C</button>
+        <button onclick="playNoteFromButton('re')">D</button>
+        <button onclick="playNoteFromButton('mi')">E</button>
+        <button onclick="playNoteFromButton('fa')">F</button>
+        <button onclick="playNoteFromButton('sol')">G</button>
+        <button onclick="playNoteFromButton('la')">A</button>
+        <button onclick="playNoteFromButton('si')">B</button>
     </div>
 
-    <script src="functions.js"></script>
+    <section id="teclado-virtual">
+        <h2>Toca las notas con tu teclado</h2>
+        <p>Usa las teclas <strong>D - F - G - H - J - K</strong> para tocar las notas.</p>
+        
+        <div class="keyboard sharps">
+            <div class="key sharp" data-key="r">R<br><small>Do#</small></div>
+            <div class="key sharp" data-key="t">T<br><small>Re#</small></div>
+            <div class="key sharp" data-key="u">U<br><small>Fa#</small></div>
+            <div class="key sharp" data-key="i">I<br><small>Sol#</small></div>
+            <div class="key sharp" data-key="o">O<br><small>La#</small></div>
+        </div>
+        
+        <div class="keyboard">
+            <div class="key" data-key="d">D<br><small>Do</small></div>
+            <div class="key" data-key="f">F<br><small>Re</small></div>
+            <div class="key" data-key="g">G<br><small>Mi</small></div>
+            <div class="key" data-key="h">H<br><small>Fa</small></div>
+            <div class="key" data-key="j">J<br><small>Sol</small></div>
+            <div class="key" data-key="k">K<br><small>La</small></div>
+            <div class="key" data-key="l">L<br><small>Si</small></div>
+           
+        </div>
+        
+    </section>
+
+    <script src="js/functions.js"></script>
 </body>
+
 </html>
-    
+<!--                 Se conecta a un <code>AudioContext</code> que representa el destino del sonido.
+ -->
