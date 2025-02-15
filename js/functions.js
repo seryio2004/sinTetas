@@ -252,6 +252,10 @@ document.addEventListener("DOMContentLoaded", function() {
             let canvas = document.getElementById('waveform');
             let ctx = canvas.getContext('2d');
 
+            // Set canvas dimensions explicitly for iOS
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+
             document.querySelectorAll('button').forEach(button => {
                 button.addEventListener('mousedown', function() {
                     if (context.state === 'suspended') {
