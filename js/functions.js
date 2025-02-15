@@ -1,18 +1,12 @@
-let audioCtx;
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let gainNode;
 let freq = 440;
 let volume = 0.3;
 let waveform = 'sine'; // Forma de onda por defecto
 let keyToNote = {};
 let activeOscillators = {}; //Para manejar múltiples sonidos
-let pressedKeys = {}; // Objeto para rastrear teclas presionadas
-
-// Función para inicializar el contexto de audio
-function initAudioContext() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-}
+let currentButtonNote = null;
+let buttonTimeout = null;
 
 // Función para calcular notas en base a la frecuencia seleccionada
 function actualizarNotas() {
@@ -35,95 +29,160 @@ function actualizarNotas() {
 // Inicializar notas al cargar la página
 actualizarNotas();
 
-// Función para iniciar una nota
-function startNote(note) {
-    if (!activeOscillators[note]) {
-        let oscillator = audioCtx.createOscillator();
-        gainNode = audioCtx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.frequency.value = note;
-        oscillator.type = waveform;
-        gainNode.gain.value = volume;
-        oscillator.start();
-        activeOscillators[note] = oscillator;
+// 🎛 Slider de frecuencia
+document.querySelector("#freq-slider").addEventListener("input", (e) => {
+    freq = parseFloat(e.target.value);
+    document.querySelector("#freq-label").textContent = freq;
+    actualizarNotas();
+});
+
+// 🎚 Slider de volumen
+document.querySelector("#volume-slider").addEventListener("input", (e) => {
+    volume = parseFloat(e.target.value);
+    document.querySelector("#volume-label").textContent = volume.toFixed(2);
+    for (let key in activeOscillators) {
+        activeOscillators[key].gainNode.gain.value = volume;
+    }
+});
+
+// 🎚 Selector de forma de onda
+document.querySelector("#waveform-selector").addEventListener("change", (e) => {
+    waveform = e.target.value;
+});
+
+// Detectar teclas presionadas
+document.addEventListener("keydown", (event) => {
+    let key = event.key.toLowerCase();
+    if (keyToNote[key] && !activeOscillators[key]) { // Si no está ya sonando
+        playNote(key, keyToNote[key]);
+        highlightKey(key, true);
+    }
+});
+
+//Detectar teclas soltadas
+document.addEventListener("keyup", (event) => {
+    let key = event.key.toLowerCase();
+    if (activeOscillators[key]) {
+        stopNote(key);
+        highlightKey(key, false);
+    }
+});
+
+document.querySelectorAll(".key, .key .sharp").forEach((keyElement) => {
+    keyElement.addEventListener("touchstart", (event) => {
+        event.preventDefault(); // Prevenir el evento de doble toque en móviles
+        let key = keyElement.getAttribute("data-key");
+        if (keyToNote[key] && !activeOscillators[key]) {
+            playNote(key, keyToNote[key]);
+            highlightKey(key, true);
+        }
+    });
+
+    keyElement.addEventListener("touchend", (event) => {
+        event.preventDefault();
+        let key = keyElement.getAttribute("data-key");
+        if (activeOscillators[key]) {
+            stopNote(key);
+            highlightKey(key, false);
+        }
+    });
+});
+
+/*
+function playNoteFromButton(note) {
+    const noteFrequencies = {
+        "do": keyToNote["c"],
+        "re": keyToNote["d"],
+        "mi": keyToNote["e"],
+        "fa": keyToNote["f"],
+        "sol": keyToNote["g"],
+        "la": keyToNote["a"],
+        "si": keyToNote["b"] * (2 ** (2 / 12)) // Si
+    };
+
+    if (noteFrequencies[note]) {
+        if (currentButtonNote) {
+            stopNoteFromButton(currentButtonNote);
+        }
+        playNoteFromButtonHelper(note, noteFrequencies[note]);
+        currentButtonNote = note;
+
+        if (buttonTimeout) {
+            clearTimeout(buttonTimeout);
+        }
+        buttonTimeout = setTimeout(() => {
+            stopNoteFromButton(note);
+            currentButtonNote = null;
+        }, 2000);
     }
 }
 
-// Función para detener una nota
-function stopNote(note) {
+function playNoteFromButtonHelper(note, frequency) {
+    let oscillator = audioCtx.createOscillator();
+    let gainNode = audioCtx.createGain();
+
+    oscillator.type = waveform; // Usar la forma de onda seleccionada
+    oscillator.frequency.value = frequency;
+    gainNode.gain.value = volume;
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();
+
+    activeOscillators[note] = { oscillator, gainNode };
+}
+
+function stopNoteFromButton(note) {
     if (activeOscillators[note]) {
-        activeOscillators[note].stop();
-        delete activeOscillators[note];
+        let { oscillator, gainNode } = activeOscillators[note];
+
+        gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+        setTimeout(() => {
+            oscillator.stop();
+            oscillator.disconnect();
+            delete activeOscillators[note];
+        }, 100);
+    }
+}*/
+
+function playNote(key, frequency) {
+    let oscillator = audioCtx.createOscillator();
+    let gainNode = audioCtx.createGain();
+
+    oscillator.type = waveform; // Usar la forma de onda seleccionada
+    oscillator.frequency.value = frequency;
+    gainNode.gain.value = volume;
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();
+
+    activeOscillators[key] = { oscillator, gainNode };
+}
+
+// Detener sonido de una tecla
+function stopNote(key) {
+    if (activeOscillators[key]) {
+        let { oscillator, gainNode } = activeOscillators[key];
+
+        //  Suavizar el apagado para evitar cortes bruscos
+        gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+        setTimeout(() => {
+            oscillator.stop();
+            oscillator.disconnect();
+            delete activeOscillators[key];
+        }, 100);
     }
 }
 
-// Función para resaltar una tecla
-function highlightKey(key) {
-    let keyElement = document.querySelector(`.key[data-key="${key}"]`);
+//Resaltar teclas en pantalla
+function highlightKey(key, active) {
+    let keyElement = document.querySelector(`[data-key="${key}"]`);
     if (keyElement) {
-        keyElement.classList.add('active');
+        keyElement.classList.toggle("active", active);
     }
 }
-
-// Función para quitar el resaltado de una tecla
-function unhighlightKey(key) {
-    let keyElement = document.querySelector(`.key[data-key="${key}"]`);
-    if (keyElement) {
-        keyElement.classList.remove('active');
-    }
-}
-
-// Evento keydown para capturar teclas presionadas
-document.addEventListener('keydown', (event) => {
-    initAudioContext();
-    if (!pressedKeys[event.key]) {
-        pressedKeys[event.key] = true;
-        if (keyToNote[event.key]) {
-            startNote(keyToNote[event.key]);
-            highlightKey(event.key);
-        }
-    }
-});
-
-// Evento keyup para capturar teclas liberadas
-document.addEventListener('keyup', (event) => {
-    if (pressedKeys[event.key]) {
-        delete pressedKeys[event.key];
-        if (keyToNote[event.key]) {
-            stopNote(keyToNote[event.key]);
-            unhighlightKey(event.key);
-        }
-    }
-});
-
-// Evento touchstart para capturar teclas en dispositivos móviles
-document.addEventListener('touchstart', (event) => {
-    initAudioContext();
-    let keyElement = event.target.closest('.key');
-    if (keyElement) {
-        let key = keyElement.dataset.key;
-        if (key && !pressedKeys[key]) {
-            pressedKeys[key] = true;
-            if (keyToNote[key]) {
-                startNote(keyToNote[key]);
-                highlightKey(key);
-            }
-        }
-    }
-});
-
-// Evento touchend para capturar teclas liberadas en dispositivos móviles
-document.addEventListener('touchend', (event) => {
-    let keyElement = event.target.closest('.key');
-    if (keyElement) {
-        let key = keyElement.dataset.key;
-        if (key && pressedKeys[key]) {
-            delete pressedKeys[key];
-            if (keyToNote[key]) {
-                stopNote(keyToNote[key]);
-                unhighlightKey(key);
-            }
-        }
-    }
-});
