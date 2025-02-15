@@ -7,6 +7,16 @@ let keyToNote = {};
 let activeOscillators = {}; //Para manejar múltiples sonidos
 let currentButtonNote = null;
 let buttonTimeout = null;
+let customWave; // Guardaremos la onda personalizada
+
+// 🎛 Crear la forma de onda personalizada
+function createCustomWave() {
+    let real = new Float32Array([0, 1, 0.5, 0.25, 0.125]);  // Armónicos decrecientes
+    let imag = new Float32Array(real.length); // Sin desfase
+    customWave = audioCtx.createPeriodicWave(real, imag, { disableNormalization: false });
+}
+
+
 
 // Función para calcular notas en base a la frecuencia seleccionada
 function actualizarNotas() {
@@ -72,6 +82,7 @@ document.addEventListener("keyup", (event) => {
 function initializeAudioContext() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        createCustomWave();
     }
 }
 
@@ -96,70 +107,18 @@ document.querySelectorAll(".key, .key.sharp").forEach((keyElement) => {
         }
     });
 });
-/*
-function playNoteFromButton(note) {
-    const noteFrequencies = {
-        "do": keyToNote["c"],
-        "re": keyToNote["d"],
-        "mi": keyToNote["e"],
-        "fa": keyToNote["f"],
-        "sol": keyToNote["g"],
-        "la": keyToNote["a"],
-        "si": keyToNote["b"] * (2 ** (2 / 12)) // Si
-    };
-
-    if (noteFrequencies[note]) {
-        if (currentButtonNote) {
-            stopNoteFromButton(currentButtonNote);
-        }
-        playNoteFromButtonHelper(note, noteFrequencies[note]);
-        currentButtonNote = note;
-
-        if (buttonTimeout) {
-            clearTimeout(buttonTimeout);
-        }
-        buttonTimeout = setTimeout(() => {
-            stopNoteFromButton(note);
-            currentButtonNote = null;
-        }, 2000);
-    }
-}
-
-function playNoteFromButtonHelper(note, frequency) {
-    let oscillator = audioCtx.createOscillator();
-    let gainNode = audioCtx.createGain();
-
-    oscillator.type = waveform; // Usar la forma de onda seleccionada
-    oscillator.frequency.value = frequency;
-    gainNode.gain.value = volume;
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    oscillator.start();
-
-    activeOscillators[note] = { oscillator, gainNode };
-}
-
-function stopNoteFromButton(note) {
-    if (activeOscillators[note]) {
-        let { oscillator, gainNode } = activeOscillators[note];
-
-        gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-
-        setTimeout(() => {
-            oscillator.stop();
-            oscillator.disconnect();
-            delete activeOscillators[note];
-        }, 100);
-    }
-}*/
 
 function playNote(key, frequency) {
     let oscillator = audioCtx.createOscillator();
     let gainNode = audioCtx.createGain();
 
-    oscillator.type = waveform; // Usar la forma de onda seleccionada
+    // Asignar la forma de onda seleccionada
+    if (waveform === "custom") {
+        oscillator.setPeriodicWave(customWave);
+    } else {
+        oscillator.type = waveform; 
+    }
+
     oscillator.frequency.value = frequency;
     gainNode.gain.value = volume;
 
