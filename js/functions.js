@@ -68,10 +68,17 @@ document.addEventListener("keyup", (event) => {
     }
 });
 
+function initializeAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
 // Agregar eventos táctiles a las teclas en dispositivos móviles
 document.querySelectorAll(".key, .key.sharp").forEach((keyElement) => {
     keyElement.addEventListener("touchstart", (event) => {
         event.preventDefault(); // Prevenir el evento de doble toque en móviles
+        initializeAudioContext(); // Asegurar que el contexto de audio esté iniciado
         let key = keyElement.getAttribute("data-key");
         if (keyToNote[key] && !activeOscillators[key]) {
             playNote(key, keyToNote[key]);
@@ -88,8 +95,6 @@ document.querySelectorAll(".key, .key.sharp").forEach((keyElement) => {
         }
     });
 });
-
-
 /*
 function playNoteFromButton(note) {
     const noteFrequencies = {
