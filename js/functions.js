@@ -68,7 +68,8 @@ document.addEventListener("keyup", (event) => {
     }
 });
 
-document.querySelectorAll(".key, .key .sharp").forEach((keyElement) => {
+// Agregar eventos táctiles a las teclas en dispositivos móviles
+document.querySelectorAll(".key, .key.sharp").forEach((keyElement) => {
     keyElement.addEventListener("touchstart", (event) => {
         event.preventDefault(); // Prevenir el evento de doble toque en móviles
         let key = keyElement.getAttribute("data-key");
@@ -87,6 +88,7 @@ document.querySelectorAll(".key, .key .sharp").forEach((keyElement) => {
         }
     });
 });
+
 
 /*
 function playNoteFromButton(note) {
