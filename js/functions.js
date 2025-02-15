@@ -1,4 +1,4 @@
-let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let audioCtx = null;
 let gainNode;
 let freq = 440;
 let volume = 0.3;
