@@ -1,4 +1,4 @@
-let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let audioCtx;
 let gainNode;
 let freq = 440;
 let volume = 0.3;
@@ -6,6 +6,13 @@ let waveform = 'sine'; // Forma de onda por defecto
 let keyToNote = {};
 let activeOscillators = {}; //Para manejar múltiples sonidos
 let pressedKeys = {}; // Objeto para rastrear teclas presionadas
+
+// Función para inicializar el contexto de audio
+function initAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
 
 // Función para calcular notas en base a la frecuencia seleccionada
 function actualizarNotas() {
@@ -69,6 +76,7 @@ function unhighlightKey(key) {
 
 // Evento keydown para capturar teclas presionadas
 document.addEventListener('keydown', (event) => {
+    initAudioContext();
     if (!pressedKeys[event.key]) {
         pressedKeys[event.key] = true;
         if (keyToNote[event.key]) {
@@ -91,6 +99,7 @@ document.addEventListener('keyup', (event) => {
 
 // Evento touchstart para capturar teclas en dispositivos móviles
 document.addEventListener('touchstart', (event) => {
+    initAudioContext();
     let key = event.target.dataset.key;
     if (key && !pressedKeys[key]) {
         pressedKeys[key] = true;
