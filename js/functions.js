@@ -100,24 +100,30 @@ document.addEventListener('keyup', (event) => {
 // Evento touchstart para capturar teclas en dispositivos móviles
 document.addEventListener('touchstart', (event) => {
     initAudioContext();
-    let key = event.target.dataset.key;
-    if (key && !pressedKeys[key]) {
-        pressedKeys[key] = true;
-        if (keyToNote[key]) {
-            startNote(keyToNote[key]);
-            highlightKey(key);
+    let keyElement = event.target.closest('.key');
+    if (keyElement) {
+        let key = keyElement.dataset.key;
+        if (key && !pressedKeys[key]) {
+            pressedKeys[key] = true;
+            if (keyToNote[key]) {
+                startNote(keyToNote[key]);
+                highlightKey(key);
+            }
         }
     }
 });
 
 // Evento touchend para capturar teclas liberadas en dispositivos móviles
 document.addEventListener('touchend', (event) => {
-    let key = event.target.dataset.key;
-    if (key && pressedKeys[key]) {
-        delete pressedKeys[key];
-        if (keyToNote[key]) {
-            stopNote(keyToNote[key]);
-            unhighlightKey(key);
+    let keyElement = event.target.closest('.key');
+    if (keyElement) {
+        let key = keyElement.dataset.key;
+        if (key && pressedKeys[key]) {
+            delete pressedKeys[key];
+            if (keyToNote[key]) {
+                stopNote(keyToNote[key]);
+                unhighlightKey(key);
+            }
         }
     }
 });
