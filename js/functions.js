@@ -50,8 +50,9 @@ document.querySelector("#waveform-selector").addEventListener("change", (e) => {
     waveform = e.target.value;
 });
 
-// Detectar teclas presionadas
+// Detectar teclas presionadas en PC
 document.addEventListener("keydown", (event) => {
+    initializeAudioContext();
     let key = event.key.toLowerCase();
     if (keyToNote[key] && !activeOscillators[key]) { // Si no está ya sonando
         playNote(key, keyToNote[key]);
@@ -59,7 +60,7 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-//Detectar teclas soltadas
+//Detectar teclas soltadas en PC
 document.addEventListener("keyup", (event) => {
     let key = event.key.toLowerCase();
     if (activeOscillators[key]) {
