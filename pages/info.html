@@ -53,21 +53,23 @@
         </section>
 
         <!-- Funcionamiento del sintetizador -->
-        <section id="funcionamiento">
+        <section id="funcionamiento-sintetizador">
             <h2>Funcionamiento del sintetizador web</h2>
             <p>
-                Nuestro sintetizador usa la <strong>Web Audio API</strong> para generar sonido.
+                El sintetizador usa la <strong>Web Audio API</strong> para generar sonido.
                 Se crea un <code>OscillatorNode</code> que produce una onda sonora con una determinada frecuencia.
             </p>
             <h3>Componentes principales:</h3>
             <ul>
-                <li>📡 <strong>OscillatorNode:</strong> Genera la onda de sonido.</li>
-                <li>🔊 <strong>GainNode:</strong> Controla el volumen del sonido.</li>
-                <li>🎛️ <strong>Interfaz:</strong> Controles para cambiar la frecuencia y volumen en tiempo real.</li>
+                <li> <strong>OscillatorNode:</strong> Genera la onda de sonido.</li>
+                <li> <strong>GainNode:</strong> Controla el volumen del sonido.</li>
+                <li> <strong>Interfaz:</strong> Controles para cambiar la frecuencia y volumen en tiempo real.</li>
             </ul>
             <p>
                 Puedes modificar el sonido con un **slider de frecuencia** y un **slider de volumen**, lo que cambia los valores en tiempo real.
             </p>
+        </section>
+        <section id="funcionamiento-representacion">
             <h2>Funcionamento representación de la onda</h2>
             <p>
                 Para la representacion de la onda se utiliza un <strong>canvas</strong> que se actualiza en tiempo real con la onda generada por el <strong>OscillatorNode</strong>.
@@ -75,14 +77,226 @@
             <h3>Funcionamiento tecnico de la función </h3>
             <p>
                 La función <code>drawWaveform</code> se encarga de dibujar la onda en el canvas. Esta función se ejecuta en cada iteración del bucle principal de la aplicación.
-                
+                <br>
+                Lo primero sera definir la variable global var <code>isPlaying</code> para saber si una nota esta siendo tocada.
+                <br>
+                Se usa para controlar cuando dibujar la onda en el canvas.
+                <br>
+               
             </p>
+            <h3><strong>drawWave(ctx)</strong></h3>
+            <p>condicion de ejecución isPlaying</p>
+            <h3>b) Actualización Animada</h3>
+            <pre><code>requestAnimationFrame(() => drawWave(ctx));</code></pre>
+            <p>
+              Se llama a <code>drawWave</code> nuevamente en el siguiente frame usando <code>requestAnimationFrame</code>, lo que crea un bucle de animación sincronizado con la tasa de refresco del navegador. Esto permite actualizar la forma de onda en tiempo real.
+            </p>
+            
+            <h3>c) Preparación de Buffers</h3>
+            <pre><code>let bufferLength = 2048;
+          let dataArray = new Uint8Array(bufferLength);
+          let combinedData = new Float32Array(bufferLength);</code></pre>
+            <ul>
+              <li><strong>bufferLength:</strong> Define el número de muestras a procesar (2048 puntos).</li>
+              <li><strong>dataArray:</strong> Arreglo de 8 bits para almacenar los datos de la forma de onda de cada oscilador.</li>
+              <li><strong>combinedData:</strong> Arreglo de 32 bits para combinar los datos de todos los osciladores activos.</li>
+            </ul>
+            
+            <h3>d) Procesamiento de los Osciladores Activos</h3>
+            <pre><code>for (let key in activeOscillators) {
+              let analyser = activeOscillators[key].analyser;
+              analyser.getByteTimeDomainData(dataArray);
+          
+              for (let i = 0; i < bufferLength; i++) {
+                  combinedData[i] += (dataArray[i] - 128) / 128.0; // Normalize and combine
+              }
+          }</code></pre>
+            <p>
+              Se recorre el objeto <code>activeOscillators</code> (se asume que contiene todos los osciladores sonando). Para cada oscilador:
+            </p>
+            <ul>
+              <li>Se obtiene su nodo <code>analyser</code>.</li>
+              <li>Con <code>analyser.getByteTimeDomainData(dataArray)</code> se extraen los datos del dominio del tiempo en formato byte.</li>
+              <li>Se normalizan los valores (restando 128 y dividiendo entre 128) para obtener un rango aproximado de -1 a 1.</li>
+              <li>Los valores normalizados se suman en el arreglo <code>combinedData</code> para obtener una forma de onda combinada en caso de tener varios osciladores.</li>
+            </ul>
+            
+            <h3>e) Limpieza y Configuración del Canvas</h3>
+            <pre><code>ctx.fillStyle = 'rgb(200, 200, 200)';
+          ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = 'rgb(0, 0, 0)';
+          
+          ctx.beginPath();</code></pre>
+            <p>
+              Se pinta el fondo del canvas de color gris claro y se configuran los estilos de la línea (ancho y color) para dibujar la forma de onda. Luego, se inicia un nuevo camino gráfico con <code>ctx.beginPath()</code>.
+            </p>
+            
+            <h3>f) Dibujado de la Forma de Onda</h3>
+            <pre><code>let sliceWidth = ctx.canvas.width * 1.0 / bufferLength;
+          let x = 0;
+          
+          for (let i = 0; i < bufferLength; i++) {
+              let y = (combinedData[i] / Object.keys(activeOscillators).length) * ctx.canvas.height / 2 + ctx.canvas.height / 2;
+          
+              if (i === 0) {
+                  ctx.moveTo(x, y);
+              } else {
+                  ctx.lineTo(x, y);
+              }
+          
+              x += sliceWidth;
+          }
+          
+          ctx.lineTo(ctx.canvas.width, ctx.canvas.height / 2);
+          ctx.stroke();</code></pre>
+            <ul>
+              <li><strong>sliceWidth:</strong> Determina el ancho horizontal para cada muestra, dividiendo la anchura total del canvas entre el número de puntos.</li>
+              <li>Se itera sobre cada muestra en <code>combinedData</code> para calcular la posición vertical <code>y</code> y dibujar la línea de la forma de onda.</li>
+              <li>El valor de <code>y</code> se obtiene promediando la señal (dividiendo entre el número de osciladores), escalándola y centrándola verticalmente en el canvas.</li>
+              <li>Finalmente, se dibuja la línea con <code>ctx.stroke()</code>.</li>
+            </ul>
+            
+            <h2>3. Inicialización del Audio y el Canvas</h2>
+            <p>Este bloque se ejecuta cuando el documento HTML ha cargado (<code>DOMContentLoaded</code>):</p>
+            <pre><code>document.addEventListener("DOMContentLoaded", function() {
+              let context;
+              
+              function initializeContext() {
+                  if (!context) {
+                      // Creación del AudioContext
+                      context = new (window.AudioContext || window.webkitAudioContext)();
+          
+                      let masterGain = context.createGain();
+                      masterGain.connect(context.destination);
+          
+                      let analyser = context.createAnalyser();
+                      analyser.fftSize = 2048;
+                      masterGain.connect(analyser);
+          
+                      let canvas = document.getElementById('waveform');
+                      let ctx = canvas.getContext('2d');
+          
+                      // Establecer dimensiones explícitas para iOS
+                      canvas.width = canvas.clientWidth;
+                      canvas.height = canvas.clientHeight;
+          
+                      // Añadir listeners a los botones
+                      document.querySelectorAll('button').forEach(button => {
+                          button.addEventListener('mousedown', function() {
+                              if (context.state === 'suspended') {
+                                  context.resume();
+                              }
+          
+                              let osc = context.createOscillator();
+                              // Configuración del oscilador
+                              osc.frequency.value = 220;
+                              let imag = new Float32Array([0, 0, 1, 0, 1]); // Componente imaginaria
+                              let real = new Float32Array(imag.length);       // Componente real
+                              let customWave = context.createPeriodicWave(real, imag);
+                              osc.setPeriodicWave(customWave);
+          
+                              osc.connect(masterGain);
+                              osc.start();
+                              isPlaying = true;
+          
+                              drawWave(ctx);
+                          });
+          
+                          button.addEventListener('mouseup', function() {
+                              isPlaying = false;
+                              osc.stop();
+                          });
+                      });
+                  }
+              }
+          
+              document.body.addEventListener('click', initializeContext, { once: true });
+          });</code></pre>
+            
+            <h3>a) Inicialización del AudioContext</h3>
+            <ul>
+              <li>
+                <strong>AudioContext:</strong> Se crea un nuevo contexto de audio compatible con el navegador.
+              </li>
+              <li>
+                <strong>Master Gain:</strong> Nodo de ganancia (<code>createGain()</code>) que controla el volumen global y se conecta al destino (<code>context.destination</code>).
+              </li>
+              <li>
+                <strong>Analyser Node:</strong> Nodo analizador (<code>createAnalyser()</code>) que se utiliza para extraer datos de la forma de onda, con <code>fftSize</code> establecido en 2048.
+              </li>
+            </ul>
+            
+            <h3>b) Configuración del Canvas</h3>
+            <p>
+              Se obtiene el elemento canvas mediante <code>document.getElementById('waveform')</code> y se establece su contexto 2D. Además, se asignan las dimensiones del canvas a partir de su tamaño en pantalla (<code>clientWidth</code> y <code>clientHeight</code>), lo que es especialmente importante en dispositivos iOS.
+            </p>
+            
+            <h3>c) Configuración de Eventos en Botones</h3>
+            <p>
+              Se añaden event listeners a todos los botones de la página para iniciar y detener el sonido:
+            </p>
+            <ul>
+              <li>
+                <strong>Evento <code>mousedown</code>:</strong>
+                <ul>
+                  <li>Se reanuda el <code>AudioContext</code> si está suspendido.</li>
+                  <li>Se crea un oscilador, se establece su frecuencia a 220 Hz y se configura con una onda periódica personalizada usando <code>setPeriodicWave</code>.</li>
+                  <li>El oscilador se conecta al <code>masterGain</code>, se inicia y se establece <code>isPlaying</code> a <code>true</code>.</li>
+                  <li>Se llama a <code>drawWave(ctx)</code> para comenzar la visualización de la forma de onda.</li>
+                </ul>
+              </li>
+              <li>
+                <strong>Evento <code>mouseup</code>:</strong>
+                <ul>
+                  <li>Se establece <code>isPlaying</code> a <code>false</code> para detener la visualización.</li>
+                  <li>Se detiene el oscilador con <code>osc.stop()</code>.</li>
+                </ul>
+              </li>
+            </ul>
+            <p>
+              <em>Nota:</em> En este fragmento, la variable <code>osc</code> se define en el callback de <code>mousedown</code> y no es accesible en el callback de <code>mouseup</code>. En una implementación completa, se debería almacenar el oscilador (por ejemplo, en una variable global o en <code>activeOscillators</code>) para detenerlo correctamente.
+            </p>
+            
+            <h3>d) Inicialización Mediante Interacción del Usuario</h3>
+            <p>
+              Se añade un listener al <code>body</code> para el primer clic, lo que garantiza que el <code>AudioContext</code> se inicialice <strong>solo tras una interacción del usuario</strong> (requisito de muchos navegadores para reproducir audio).
+            </p>
+            
+            <h2>Resumen General</h2>
+            <ol>
+              <li>
+                <strong>Carga de la página:</strong> Se espera a que el usuario interactúe para inicializar el <code>AudioContext</code> y el canvas.
+              </li>
+              <li>
+                <strong>Al hacer clic en un botón:</strong>
+                <ul>
+                  <li>Se crea y configura un oscilador que genera un sonido a 220 Hz con una forma de onda personalizada.</li>
+                  <li>El oscilador se conecta a la cadena de audio (<code>masterGain</code> y <code>analyser</code>).</li>
+                  <li>Se activa la variable <code>isPlaying</code> y se inicia <code>drawWave(ctx)</code> para visualizar la forma de onda en tiempo real.</li>
+                </ul>
+              </li>
+              <li>
+                <strong>Al soltar el botón:</strong>
+                <ul>
+                  <li>Se establece <code>isPlaying</code> a <code>false</code> para detener la visualización.</li>
+                  <li>El oscilador se detiene con <code>osc.stop()</code>.</li>
+                </ul>
+              </li>
+            </ol>
+            
+            <p>
+              Este código demuestra cómo se pueden combinar la <strong>Web Audio API</strong> y el <strong>Canvas API</strong> para crear una visualización dinámica de la forma de onda del audio en tiempo real.
+            </p>
+            
+           
         </section>
 
     </main>
 
     <footer>
-        <p>Proyecto Sintetizador Web - 2025</p>
+        <p>ForniteBalls - 2025</p>
     </footer>
 </body>
 </html>
