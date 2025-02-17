@@ -48,13 +48,22 @@ function actualizarNotas() {
         "k": freq * (2 ** (9 / 12)), // La 
         "o": freq * (2 ** (10 / 12)),  // si#
         "l": freq * (2 ** (11 / 12)),  // si 
+
+        //siguiente octava(no dan las teclas para toda la octava, solo notas naturales)
+        "z": freq * 2, //Do
+        "x": freq * 2 * (2 ** (2/ 12)), // Re
+        "c": freq * 2 * (2 ** (4/ 12)), // Mi
+        "v": freq * 2 * (2 ** (5/ 12)), // Fa
+        "b": freq * 2 * (2 ** (7 / 12)), // sol
+        "n": freq * 2 * (2 ** (9 / 12)), // La
+        "m": freq * 2 * (2 ** (11/ 12)), // si
     };
 }
 
 // Inicializar notas al cargar la página
 actualizarNotas();
 
-// 🎛 Slider de frecuencia
+//Slider de frecuencia
 document.querySelector("#freq-slider").addEventListener("input", (e) => {
     freq = parseFloat(e.target.value);
     document.querySelector("#freq-label").textContent = freq;
