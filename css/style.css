@@ -33,12 +33,16 @@ main {
 }
 
 
-.keyboard {
+.keyboard{
     display: flex;
     justify-content: center;
     gap: 10px;
 }
-
+.keyboard2{
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
 .key.sharp {
     background: #333;
     color: #fff;

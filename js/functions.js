@@ -14,19 +14,19 @@ let customWaves = {
     "custom3": null
 };
 
-// 🎛 Crear la forma de onda personalizada
+//Crear la forma de onda personalizada
 function createCustomWaves() {
-  // Piano-like waveform
+  
   let real1 = new Float32Array([0, 1, 0.5, 0.25, 0.125, 0.0625, 0.03125]);
   let imag1 = new Float32Array([0, 0.3, 0.15, 0.075, 0.0375, 0.01875, 0.009375]);
   customWaves["custom1"] = audioCtx.createPeriodicWave(real1, imag1);
 
-  // Guitar-like waveform
+  
   let real2 = new Float32Array([0, 1, 0.8, 0.6, 0.4, 0.2, 0.1]);
   let imag2 = new Float32Array([0, 0.6, 0.3, 0.15, 0.075, 0.0375, 0.01875]);
   customWaves["custom2"] = audioCtx.createPeriodicWave(real2, imag2);
 
-  // Violin-like waveform
+  
   let real3 = new Float32Array([0, 1, 0.7, 0.5, 0.3, 0.2, 0.1]);
   let imag3 = new Float32Array([0, 0.8, 0.4, 0.2, 0.1, 0.05, 0.025]);
   customWaves["custom3"] = audioCtx.createPeriodicWave(real3, imag3);
@@ -36,9 +36,6 @@ function createCustomWaves() {
 // Función para calcular notas en base a la frecuencia seleccionada
 function actualizarNotas() {
     keyToNote = {
-        "k": freq * (2 ** (9 / 12)), // La 
-        "o": freq * (2 ** (10 / 12)),  // si#
-        "l": freq * (2 ** (11 / 12)),  // si 
         "d": freq , // La (frecuencia base) Do
         "r": freq * (2 ** (1/ 12)),  // do#
         "f": freq * (2 ** (2 / 12)), // Re
@@ -48,13 +45,25 @@ function actualizarNotas() {
         "u": freq * (2 ** (6 / 12)),  // fa#
         "j": freq * (2 ** (7 / 12)), // Solº
         "i": freq * (2 ** (8 / 12)),  // sol#
+        "k": freq * (2 ** (9 / 12)), // La 
+        "o": freq * (2 ** (10 / 12)),  // si#
+        "l": freq * (2 ** (11 / 12)),  // si 
+
+        //siguiente octava(no dan las teclas para toda la octava, solo notas naturales)
+        "z": freq * 2, //Do
+        "x": freq * 2 * (2 ** (2/ 12)), // Re
+        "c": freq * 2 * (2 ** (4/ 12)), // Mi
+        "v": freq * 2 * (2 ** (5/ 12)), // Fa
+        "b": freq * 2 * (2 ** (7 / 12)), // sol
+        "n": freq * 2 * (2 ** (9 / 12)), // La
+        "m": freq * 2 * (2 ** (11/ 12)), // si
     };
 }
 
 // Inicializar notas al cargar la página
 actualizarNotas();
 
-// 🎛 Slider de frecuencia
+//Slider de frecuencia
 document.querySelector("#freq-slider").addEventListener("input", (e) => {
     freq = parseFloat(e.target.value);
     document.querySelector("#freq-label").textContent = freq;
