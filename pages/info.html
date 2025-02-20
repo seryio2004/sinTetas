@@ -264,31 +264,9 @@
               Se añade un listener al <code>body</code> para el primer clic, lo que garantiza que el <code>AudioContext</code> se inicialice <strong>solo tras una interacción del usuario</strong> (requisito de muchos navegadores para reproducir audio).
             </p>
             
-            <h2>Resumen General</h2>
-            <ol>
-              <li>
-                <strong>Carga de la página:</strong> Se espera a que el usuario interactúe para inicializar el <code>AudioContext</code> y el canvas.
-              </li>
-              <li>
-                <strong>Al hacer clic en un botón:</strong>
-                <ul>
-                  <li>Se crea y configura un oscilador que genera un sonido a 220 Hz con una forma de onda personalizada.</li>
-                  <li>El oscilador se conecta a la cadena de audio (<code>masterGain</code> y <code>analyser</code>).</li>
-                  <li>Se activa la variable <code>isPlaying</code> y se inicia <code>drawWave(ctx)</code> para visualizar la forma de onda en tiempo real.</li>
-                </ul>
-              </li>
-              <li>
-                <strong>Al soltar el botón:</strong>
-                <ul>
-                  <li>Se establece <code>isPlaying</code> a <code>false</code> para detener la visualización.</li>
-                  <li>El oscilador se detiene con <code>osc.stop()</code>.</li>
-                </ul>
-              </li>
-            </ol>
             
-            <p>
-              Este código demuestra cómo se pueden combinar la <strong>Web Audio API</strong> y el <strong>Canvas API</strong> para crear una visualización dinámica de la forma de onda del audio en tiempo real.
-            </p>
+            
+            
             
            
         </section>

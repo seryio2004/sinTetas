@@ -206,7 +206,7 @@ function drawWave(ctx) {
         analyser.getByteTimeDomainData(dataArray);
 
         for (let i = 0; i < bufferLength; i++) {
-            combinedData[i] += (dataArray[i] - 128) / 128.0; // Normalize and combine
+            combinedData[i] += (dataArray[i] - 128) / 128.0; 
         }
     }
 
